@@ -11,6 +11,7 @@ import de.hysky.skyblocker.config.screens.powdertracker.PowderFilterConfigScreen
 import de.hysky.skyblocker.skyblock.dwarven.CrystalsHudWidget;
 import de.hysky.skyblocker.skyblock.dwarven.CarpetHighlighter;
 import de.hysky.skyblocker.skyblock.dwarven.profittrackers.PowderMiningTracker;
+import de.hysky.skyblocker.skyblock.dwarven.profittrackers.mining.MiningTrackerWidget;
 import de.hysky.skyblocker.skyblock.tabhud.widget.CommsWidget;
 import de.hysky.skyblocker.skyblock.tabhud.config.WidgetsConfigurationScreen;
 import de.hysky.skyblocker.utils.Location;
@@ -195,6 +196,156 @@ public class MiningCategory {
 								.description(Component.translatable("skyblocker.config.mining.crystalHollows.powderTrackerFilter.@Tooltip"))
 								.prompt(Component.translatable("text.skyblocker.open"))
 								.action(screen -> Minecraft.getInstance().setScreen(new PowderFilterConfigScreen(screen, new ObjectImmutableList<>(PowderMiningTracker.getName2IdMap().keySet()))))
+								.build())
+						.build())
+
+				//Mining Tracker
+				.group(OptionGroup.createBuilder()
+						.name(Component.translatable("skyblocker.config.mining.miningTracker"))
+						.description(Component.translatable("skyblocker.config.mining.miningTracker.@Tooltip"))
+						.collapsed(true)
+						.option(Option.<Boolean>createBuilder()
+								.name(Component.translatable("skyblocker.config.mining.miningTracker.enabled"))
+								.description(Component.translatable("skyblocker.config.mining.miningTracker.enabled.@Tooltip"))
+								.binding(defaults.mining.miningTracker.enabled,
+										() -> config.mining.miningTracker.enabled,
+										newValue -> config.mining.miningTracker.enabled = newValue)
+								.controller(ConfigUtils.createBooleanController())
+								.build())
+						.option(ButtonOption.createBuilder()
+								.name(Component.translatable("skyblocker.config.mining.miningTracker.screen"))
+								.prompt(Component.translatable("text.skyblocker.open"))
+								.action(screen -> Minecraft.getInstance().setScreen(new WidgetsConfigurationScreen(Location.DWARVEN_MINES, MiningTrackerWidget.INTERNAL_ID, screen)))
+								.build())
+						.option(Option.<MiningConfig.PriceSource>createBuilder()
+								.name(Component.translatable("skyblocker.config.mining.miningTracker.priceSource"))
+								.description(Component.translatable("skyblocker.config.mining.miningTracker.priceSource.@Tooltip"))
+								.binding(defaults.mining.miningTracker.priceSource,
+										() -> config.mining.miningTracker.priceSource,
+										newValue -> config.mining.miningTracker.priceSource = newValue)
+								.controller(ConfigUtils.createEnumController())
+								.build())
+						.option(Option.<Integer>createBuilder()
+								.name(Component.translatable("skyblocker.config.mining.miningTracker.pauseAfterSeconds"))
+								.description(Component.translatable("skyblocker.config.mining.miningTracker.pauseAfterSeconds.@Tooltip"))
+								.binding(defaults.mining.miningTracker.pauseAfterSeconds,
+										() -> config.mining.miningTracker.pauseAfterSeconds,
+										newValue -> config.mining.miningTracker.pauseAfterSeconds = newValue)
+								.controller(IntegerController.createBuilder().range(10, 600).slider(10).build())
+								.build())
+						.option(Option.<Boolean>createBuilder()
+								.name(Component.translatable("skyblocker.config.mining.miningTracker.valuePowder"))
+								.description(Component.translatable("skyblocker.config.mining.miningTracker.valuePowder.@Tooltip"))
+								.binding(defaults.mining.miningTracker.valuePowder,
+										() -> config.mining.miningTracker.valuePowder,
+										newValue -> config.mining.miningTracker.valuePowder = newValue)
+								.controller(ConfigUtils.createBooleanController())
+								.build())
+						.option(Option.<Integer>createBuilder()
+								.name(Component.translatable("skyblocker.config.mining.miningTracker.coinsPerPowder"))
+								.description(Component.translatable("skyblocker.config.mining.miningTracker.coinsPerPowder.@Tooltip"))
+								.binding(defaults.mining.miningTracker.coinsPerPowder,
+										() -> config.mining.miningTracker.coinsPerPowder,
+										newValue -> config.mining.miningTracker.coinsPerPowder = newValue)
+								.controller(IntegerController.createBuilder().range(0, 1000).slider(10).build())
+								.build())
+						.option(Option.<Boolean>createBuilder()
+								.name(Component.translatable("skyblocker.config.mining.miningTracker.countNaturalChests"))
+								.binding(defaults.mining.miningTracker.countNaturalChests,
+										() -> config.mining.miningTracker.countNaturalChests,
+										newValue -> config.mining.miningTracker.countNaturalChests = newValue)
+								.controller(ConfigUtils.createBooleanController())
+								.build())
+						.option(Option.<Boolean>createBuilder()
+								.name(Component.translatable("skyblocker.config.mining.miningTracker.showEvent"))
+								.binding(defaults.mining.miningTracker.showEvent,
+										() -> config.mining.miningTracker.showEvent,
+										newValue -> config.mining.miningTracker.showEvent = newValue)
+								.controller(ConfigUtils.createBooleanController())
+								.build())
+						.option(Option.<Boolean>createBuilder()
+								.name(Component.translatable("skyblocker.config.mining.miningTracker.showCoinsPerHour"))
+								.binding(defaults.mining.miningTracker.showCoinsPerHour,
+										() -> config.mining.miningTracker.showCoinsPerHour,
+										newValue -> config.mining.miningTracker.showCoinsPerHour = newValue)
+								.controller(ConfigUtils.createBooleanController())
+								.build())
+						.option(Option.<Boolean>createBuilder()
+								.name(Component.translatable("skyblocker.config.mining.miningTracker.showCoinsTotal"))
+								.binding(defaults.mining.miningTracker.showCoinsTotal,
+										() -> config.mining.miningTracker.showCoinsTotal,
+										newValue -> config.mining.miningTracker.showCoinsTotal = newValue)
+								.controller(ConfigUtils.createBooleanController())
+								.build())
+						.option(Option.<Boolean>createBuilder()
+								.name(Component.translatable("skyblocker.config.mining.miningTracker.showBlocksPerSecond"))
+								.binding(defaults.mining.miningTracker.showBlocksPerSecond,
+										() -> config.mining.miningTracker.showBlocksPerSecond,
+										newValue -> config.mining.miningTracker.showBlocksPerSecond = newValue)
+								.controller(ConfigUtils.createBooleanController())
+								.build())
+						.option(Option.<Boolean>createBuilder()
+								.name(Component.translatable("skyblocker.config.mining.miningTracker.showBlocksTotal"))
+								.binding(defaults.mining.miningTracker.showBlocksTotal,
+										() -> config.mining.miningTracker.showBlocksTotal,
+										newValue -> config.mining.miningTracker.showBlocksTotal = newValue)
+								.controller(ConfigUtils.createBooleanController())
+								.build())
+						.option(Option.<Boolean>createBuilder()
+								.name(Component.translatable("skyblocker.config.mining.miningTracker.showMiningXp"))
+								.binding(defaults.mining.miningTracker.showMiningXp,
+										() -> config.mining.miningTracker.showMiningXp,
+										newValue -> config.mining.miningTracker.showMiningXp = newValue)
+								.controller(ConfigUtils.createBooleanController())
+								.build())
+						.option(Option.<Boolean>createBuilder()
+								.name(Component.translatable("skyblocker.config.mining.miningTracker.showMithrilPowder"))
+								.binding(defaults.mining.miningTracker.showMithrilPowder,
+										() -> config.mining.miningTracker.showMithrilPowder,
+										newValue -> config.mining.miningTracker.showMithrilPowder = newValue)
+								.controller(ConfigUtils.createBooleanController())
+								.build())
+						.option(Option.<Boolean>createBuilder()
+								.name(Component.translatable("skyblocker.config.mining.miningTracker.showGemstonePowder"))
+								.binding(defaults.mining.miningTracker.showGemstonePowder,
+										() -> config.mining.miningTracker.showGemstonePowder,
+										newValue -> config.mining.miningTracker.showGemstonePowder = newValue)
+								.controller(ConfigUtils.createBooleanController())
+								.build())
+						.option(Option.<Boolean>createBuilder()
+								.name(Component.translatable("skyblocker.config.mining.miningTracker.showGlacitePowder"))
+								.binding(defaults.mining.miningTracker.showGlacitePowder,
+										() -> config.mining.miningTracker.showGlacitePowder,
+										newValue -> config.mining.miningTracker.showGlacitePowder = newValue)
+								.controller(ConfigUtils.createBooleanController())
+								.build())
+						.option(Option.<Boolean>createBuilder()
+								.name(Component.translatable("skyblocker.config.mining.miningTracker.showPowderTotal"))
+								.binding(defaults.mining.miningTracker.showPowderTotal,
+										() -> config.mining.miningTracker.showPowderTotal,
+										newValue -> config.mining.miningTracker.showPowderTotal = newValue)
+								.controller(ConfigUtils.createBooleanController())
+								.build())
+						.option(Option.<Boolean>createBuilder()
+								.name(Component.translatable("skyblocker.config.mining.miningTracker.showPristine"))
+								.binding(defaults.mining.miningTracker.showPristine,
+										() -> config.mining.miningTracker.showPristine,
+										newValue -> config.mining.miningTracker.showPristine = newValue)
+								.controller(ConfigUtils.createBooleanController())
+								.build())
+						.option(Option.<Boolean>createBuilder()
+								.name(Component.translatable("skyblocker.config.mining.miningTracker.showTopDrops"))
+								.binding(defaults.mining.miningTracker.showTopDrops,
+										() -> config.mining.miningTracker.showTopDrops,
+										newValue -> config.mining.miningTracker.showTopDrops = newValue)
+								.controller(ConfigUtils.createBooleanController())
+								.build())
+						.option(Option.<Boolean>createBuilder()
+								.name(Component.translatable("skyblocker.config.mining.miningTracker.showSessionTime"))
+								.binding(defaults.mining.miningTracker.showSessionTime,
+										() -> config.mining.miningTracker.showSessionTime,
+										newValue -> config.mining.miningTracker.showSessionTime = newValue)
+								.controller(ConfigUtils.createBooleanController())
 								.build())
 						.build())
 

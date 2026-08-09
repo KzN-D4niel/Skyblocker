@@ -30,6 +30,8 @@ public class MiningConfig {
 
 	public CrystalHollows crystalHollows = new CrystalHollows();
 
+	public MiningTracker miningTracker = new MiningTracker();
+
 	public CrystalsHud crystalsHud = new CrystalsHud();
 
 	public CrystalsWaypoints crystalsWaypoints = new CrystalsWaypoints();
@@ -94,6 +96,56 @@ public class MiningConfig {
 		public boolean countNaturalChestsInTracker = true;
 
 		public List<String> powderTrackerFilter = new ArrayList<>();
+	}
+
+	public static class MiningTracker {
+		public boolean enabled = true;
+
+		/** Session clock and rate windows freeze after this many seconds without a block break. */
+		public int pauseAfterSeconds = 60;
+
+		public PriceSource priceSource = PriceSource.BEST;
+
+		/**
+		 * Powder is not sellable, so counting it as coins inflates coins/h. Off unless the user really wants it.
+		 */
+		public boolean valuePowder = false;
+
+		/** Only used when {@link #valuePowder} is on — there is no market price for powder to look up. */
+		public int coinsPerPowder = 0;
+
+		public boolean countNaturalChests = true;
+
+		public boolean showEvent = true;
+		public boolean showCoinsPerHour = true;
+		public boolean showCoinsTotal = true;
+		public boolean showBlocksPerSecond = true;
+		public boolean showBlocksTotal = true;
+		public boolean showMiningXp = true;
+		public boolean showMithrilPowder = true;
+		public boolean showGemstonePowder = true;
+		public boolean showGlacitePowder = true;
+		public boolean showPowderTotal = false;
+		public boolean showPristine = true;
+		public boolean showTopDrops = true;
+		public boolean showSessionTime = true;
+	}
+
+	/**
+	 * Which price to value a drop at.
+	 */
+	public enum PriceSource {
+		/** The higher of the two below, per item. Almost always what you actually want. */
+		BEST,
+		/** Bazaar sell price: what you get right now by selling into the highest buy order. */
+		INSTASELL,
+		/** NPC sell price. */
+		NPC;
+
+		@Override
+		public String toString() {
+			return I18n.get("skyblocker.config.mining.miningTracker.priceSource." + name());
+		}
 	}
 
 	public static class CrystalsHud {

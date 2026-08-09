@@ -2,6 +2,7 @@ package de.hysky.skyblocker.mixins;
 
 import de.hysky.skyblocker.skyblock.InventorySearch;
 import de.hysky.skyblocker.skyblock.ItemPickupWidget;
+import de.hysky.skyblocker.skyblock.dwarven.profittrackers.mining.MiningTracker;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
@@ -17,5 +18,6 @@ public class AbstractContainerMenuMixin {
 			InventorySearch.refreshSlot(slot);
 		}
 		ItemPickupWidget.getInstance().onItemPickup(slot, stack);
+		MiningTracker.INSTANCE.onSlotUpdate((AbstractContainerMenu) (Object) this, slot, stack);
 	}
 }
