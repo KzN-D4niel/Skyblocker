@@ -1,7 +1,9 @@
 package de.hysky.skyblocker.skyblock.garden;
 
+import com.mojang.brigadier.Command;
 import de.hysky.skyblocker.SkyblockerMod;
 import de.hysky.skyblocker.annotations.Init;
+import de.hysky.skyblocker.utils.Constants;
 import de.hysky.skyblocker.config.SkyblockerConfigManager;
 import de.hysky.skyblocker.events.WorldEvents;
 import de.hysky.skyblocker.skyblock.tabhud.config.WidgetsConfigurationScreen;
@@ -20,6 +22,7 @@ import net.fabricmc.fabric.api.event.client.player.ClientPlayerBlockBreakEvents;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.nbt.NumericTag;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
@@ -50,6 +53,15 @@ public class FarmingHud {
 	private static final Queue<FloatLongPair> farmingXp = new ArrayDeque<>();
 
 	private static float farmingXpPercentProgress;
+
+	/**
+	 * Crops farmed since the client started, accumulated from the Cultivating counter Skyblocker already reads off
+	 * the held tool. Nothing new is detected here — this is the same {@code farmed_cultivating} value the HUD
+	 * already shows, only remembered across tool switches instead of being read as a lifetime total.
+	 */
+	private static long sessionFarmed;
+	/** {@code -1} until the first counter reading, so the tool's lifetime total is never booked as this session's. */
+	private static long lastCounterValue = -1;
 
 	@Init
 	public static void init() {
@@ -110,8 +122,14 @@ public class FarmingHud {
 
 			return true;
 		});
-		ClientCommandRegistrationCallback.EVENT.register((dispatcher, _) -> dispatcher.register(literal(SkyblockerMod.NAMESPACE).then(literal("hud").then(literal("farming")
-				.executes(Scheduler.queueOpenScreenCommand(() -> new WidgetsConfigurationScreen(Location.GARDEN, "hud_garden", null)))))));
+		ClientCommandRegistrationCallback.EVENT.register((dispatcher, _) -> dispatcher.register(literal(SkyblockerMod.NAMESPACE)
+				.then(literal("hud").then(literal("farming")
+						.executes(Scheduler.queueOpenScreenCommand(() -> new WidgetsConfigurationScreen(Location.GARDEN, "hud_garden", null)))))
+				.then(literal("farmingHud").then(literal("resetTotal").executes(context -> {
+					resetSessionFarmed();
+					context.getSource().sendFeedback(Constants.PREFIX.get().append(Component.translatable("skyblocker.farming.farmingHud.totalReset").withStyle(ChatFormatting.GREEN)));
+					return Command.SINGLE_SUCCESS;
+				})))));
 	}
 
 	@SuppressWarnings("SameParameterValue")
@@ -119,6 +137,10 @@ public class FarmingHud {
 		CompoundTag customData = ItemUtils.getCustomData(stack);
 		if (customData.isEmpty() || !(customData.get(counterType.nbtKey) instanceof NumericTag)) return true;
 		long count = customData.getLongOr(counterType.nbtKey, 0);
+		// Only ever add the increase. Swapping to a different hoe makes the counter jump to that tool's own
+		// lifetime total, which is a new baseline rather than a harvest.
+		if (lastCounterValue >= 0 && count > lastCounterValue) sessionFarmed += count - lastCounterValue;
+		lastCounterValue = count;
 		if (FarmingHud.counterType != counterType) {
 			counter.clear();
 			FarmingHud.counterType = counterType;
@@ -139,6 +161,18 @@ public class FarmingHud {
 
 	public static long counter() {
 		return counter.isEmpty() ? 0 : counter.peekLast().leftLong();
+	}
+
+	/**
+	 * @return crops farmed since the client started, across tool switches
+	 */
+	public static long sessionFarmed() {
+		return sessionFarmed;
+	}
+
+	public static void resetSessionFarmed() {
+		sessionFarmed = 0;
+		lastCounterValue = -1;
 	}
 
 	public static float cropsPerMinute() {

@@ -47,6 +47,14 @@ public class FarmingCategory {
 								.controller(ConfigUtils.createBooleanController())
 								.build())
 						.option(Option.<Boolean>createBuilder()
+								.name(Component.translatable("skyblocker.config.farming.farmingHud.totalFarmed"))
+								.description(Component.translatable("skyblocker.config.farming.farmingHud.totalFarmed.@Tooltip"))
+								.binding(defaults.farming.farmingHud.totalFarmed,
+										() -> config.farming.farmingHud.totalFarmed,
+										newValue -> config.farming.farmingHud.totalFarmed = newValue)
+								.controller(ConfigUtils.createBooleanController())
+								.build())
+						.option(Option.<Boolean>createBuilder()
 								.name(Component.translatable("skyblocker.config.farming.farmingHud.coins"))
 								.tags(CommonTags.ADDED_IN_6_4_0)
 								.binding(defaults.farming.farmingHud.coins,

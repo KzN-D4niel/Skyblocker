@@ -60,6 +60,9 @@ public class FarmingConfig {
 
 		public boolean counter = true;
 
+		/** Crops farmed since the client started, accumulated from the Cultivating counter. */
+		public boolean totalFarmed = false;
+
 		public boolean coins = true;
 
 		public Type type = Type.BOTH;

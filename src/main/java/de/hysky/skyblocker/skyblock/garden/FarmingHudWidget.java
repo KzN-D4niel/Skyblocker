@@ -114,6 +114,9 @@ public class FarmingHudWidget extends ElementBasedWidget {
 			addSimpleIcoText(cropStack, counterType.text, ChatFormatting.YELLOW, counterNumber);
 			addSimpleIconTranslatableText(cropStack, "skyblocker.farming.farmingHud.cropsPerMin", ChatFormatting.YELLOW, FarmingHud.NUMBER_FORMAT.format((int) cropsPerMinute / 10 * 10));
 		}
+		if (config.totalFarmed) {
+			addSimpleIconTranslatableText(cropStack, "skyblocker.farming.farmingHud.totalFarmed", ChatFormatting.YELLOW, FarmingHud.NUMBER_FORMAT.format(FarmingHud.sessionFarmed()));
+		}
 		double blockBreaks = FarmingHud.blockBreaks();
 		if (config.coins) {
 			boolean hasCounter = FarmingHud.counterType() != FarmingHud.CounterType.NONE;
