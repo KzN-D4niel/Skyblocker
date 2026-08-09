@@ -61,7 +61,10 @@ public class FarmingConfig {
 		public boolean counter = true;
 
 		/** Crops farmed since the client started, accumulated from the Cultivating counter. */
-		public boolean totalFarmed = false;
+		public boolean totalCrops = false;
+
+		/** Those crops valued at the same per-crop price the Coins/h line uses. */
+		public boolean totalCoins = false;
 
 		public boolean coins = true;
 

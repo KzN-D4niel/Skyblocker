@@ -114,14 +114,22 @@ public class FarmingHudWidget extends ElementBasedWidget {
 			addSimpleIcoText(cropStack, counterType.text, ChatFormatting.YELLOW, counterNumber);
 			addSimpleIconTranslatableText(cropStack, "skyblocker.farming.farmingHud.cropsPerMin", ChatFormatting.YELLOW, FarmingHud.NUMBER_FORMAT.format((int) cropsPerMinute / 10 * 10));
 		}
-		if (config.totalFarmed) {
-			addSimpleIconTranslatableText(cropStack, "skyblocker.farming.farmingHud.totalFarmed", ChatFormatting.YELLOW, FarmingHud.NUMBER_FORMAT.format(FarmingHud.sessionFarmed()));
-		}
 		double blockBreaks = FarmingHud.blockBreaks();
+		boolean hasCounter = FarmingHud.counterType() != FarmingHud.CounterType.NONE;
+		boolean hasReplenish = hasCounter && ItemUtils.getCustomData(farmingToolStack).getCompoundOrEmpty("enchantments").contains("replenish");
 		if (config.coins) {
-			boolean hasCounter = FarmingHud.counterType() != FarmingHud.CounterType.NONE;
-			boolean hasReplenish = hasCounter && ItemUtils.getCustomData(farmingToolStack).getCompoundOrEmpty("enchantments").contains("replenish");
 			addSimpleIconTranslatableText(Ico.GOLD, "skyblocker.farming.farmingHud.coinsPerHour", ChatFormatting.GOLD, getPriceText(cropItemId, cropsPerMinute, hasReplenish, blockBreaks));
+		}
+		if (config.totalCrops) {
+			addSimpleIconTranslatableText(cropStack, "skyblocker.farming.farmingHud.totalCrops", ChatFormatting.YELLOW, FarmingHud.NUMBER_FORMAT.format(FarmingHud.sessionFarmed()));
+		}
+		if (config.totalCoins) {
+			// Same price the Coins/h line above is built on, only multiplied by the session's crops instead of a rate.
+			CropPrice price = resolveCropPrice(cropItemId, cropsPerMinute, hasReplenish, blockBreaks);
+			addSimpleIconTranslatableText(Ico.GOLD, "skyblocker.farming.farmingHud.totalCoins", ChatFormatting.GOLD,
+					price.valid()
+							? Component.literal(FarmingHud.NUMBER_FORMAT.format((long) (price.perCrop() * FarmingHud.sessionFarmed()))).append(price.sourceLabel())
+							: Component.translatable("skyblocker.farming.farmingHud.noData"));
 		}
 		addSimpleIconTranslatableText(cropStack, "skyblocker.farming.farmingHud.blocksPerSec", ChatFormatting.YELLOW, Double.toString(blockBreaks));
 		if (config.experience) {
@@ -148,6 +156,25 @@ public class FarmingHudWidget extends ElementBasedWidget {
 	 * - BOTH: higher of NPC or bazaar price
 	 */
 	private Component getPriceText(String cropItemId, float cropsPerMinute, boolean hasReplenish, double blockBreaks) {
+		CropPrice price = resolveCropPrice(cropItemId, cropsPerMinute, hasReplenish, blockBreaks);
+		if (!price.valid()) return Component.translatable("skyblocker.farming.farmingHud.noData");
+
+		if (hasReplenish) cropsPerMinute -= (float) price.usedByReplenish();
+		// Multiply by 60 to convert to hourly and divide by 100 for rounding is combined into multiplying by 0.6.
+		return Component.literal(FarmingHud.NUMBER_FORMAT.format((int) (price.perCrop() * cropsPerMinute * 0.6) * 100)).append(price.sourceLabel());
+	}
+
+	/**
+	 * The price of one crop under the configured source, along with the seeds Replenish puts back in the ground.
+	 *
+	 * @param perCrop          the chosen price per crop
+	 * @param sourceLabel      the {@code (NPC)} / {@code (Bazaar)} suffix, empty when there is no price
+	 * @param valid            false when no source had data for this crop
+	 * @param usedByReplenish  crops per minute that Replenish consumes as seeds
+	 */
+	private record CropPrice(double perCrop, Component sourceLabel, boolean valid, double usedByReplenish) {}
+
+	private CropPrice resolveCropPrice(String cropItemId, float cropsPerMinute, boolean hasReplenish, double blockBreaks) {
 		OptionalDouble bazaar = ItemUtils.getItemPrice(cropItemId); // Gets the bazaar sell price of the crop.;
 		OptionalDouble npc = TooltipInfoType.NPC.hasOrNullWarning(cropItemId) ? OptionalDouble.of(TooltipInfoType.NPC.getData().getDouble(cropItemId)) : OptionalDouble.empty();
 
@@ -181,7 +208,7 @@ public class FarmingHudWidget extends ElementBasedWidget {
 		}
 
 		double priceToUse = 0;
-		Component sourceLabel = null;
+		Component sourceLabel = Component.empty();
 		boolean hasValidPrice = false;
 
 		switch (SkyblockerConfigManager.get().farming.farmingHud.type) {
@@ -217,10 +244,7 @@ public class FarmingHudWidget extends ElementBasedWidget {
 			}
 		}
 
-
-		if (hasReplenish) cropsPerMinute -= (float) (usedByReplenish);
-		// Multiply by 60 to convert to hourly and divide by 100 for rounding is combined into multiplying by 0.6.
-		return hasValidPrice ? Component.literal(FarmingHud.NUMBER_FORMAT.format((int) (priceToUse * cropsPerMinute * 0.6) * 100)).append(sourceLabel) : Component.translatable("skyblocker.farming.farmingHud.noData");
+		return new CropPrice(priceToUse, sourceLabel, hasValidPrice, usedByReplenish);
 	}
 
 	@Override

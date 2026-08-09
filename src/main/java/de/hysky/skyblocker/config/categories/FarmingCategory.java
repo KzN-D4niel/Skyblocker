@@ -47,11 +47,19 @@ public class FarmingCategory {
 								.controller(ConfigUtils.createBooleanController())
 								.build())
 						.option(Option.<Boolean>createBuilder()
-								.name(Component.translatable("skyblocker.config.farming.farmingHud.totalFarmed"))
-								.description(Component.translatable("skyblocker.config.farming.farmingHud.totalFarmed.@Tooltip"))
-								.binding(defaults.farming.farmingHud.totalFarmed,
-										() -> config.farming.farmingHud.totalFarmed,
-										newValue -> config.farming.farmingHud.totalFarmed = newValue)
+								.name(Component.translatable("skyblocker.config.farming.farmingHud.totalCrops"))
+								.description(Component.translatable("skyblocker.config.farming.farmingHud.totalCrops.@Tooltip"))
+								.binding(defaults.farming.farmingHud.totalCrops,
+										() -> config.farming.farmingHud.totalCrops,
+										newValue -> config.farming.farmingHud.totalCrops = newValue)
+								.controller(ConfigUtils.createBooleanController())
+								.build())
+						.option(Option.<Boolean>createBuilder()
+								.name(Component.translatable("skyblocker.config.farming.farmingHud.totalCoins"))
+								.description(Component.translatable("skyblocker.config.farming.farmingHud.totalCoins.@Tooltip"))
+								.binding(defaults.farming.farmingHud.totalCoins,
+										() -> config.farming.farmingHud.totalCoins,
+										newValue -> config.farming.farmingHud.totalCoins = newValue)
 								.controller(ConfigUtils.createBooleanController())
 								.build())
 						.option(Option.<Boolean>createBuilder()
