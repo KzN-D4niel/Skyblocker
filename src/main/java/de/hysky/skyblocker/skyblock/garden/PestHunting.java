@@ -21,6 +21,7 @@ import de.hysky.skyblocker.utils.scheduler.Scheduler;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.network.chat.Component;
 
@@ -44,12 +45,8 @@ public class PestHunting {
 	/** Reading and threshold both live in seconds; the title is shown for three seconds. */
 	private static final int TITLE_TICKS = 60;
 
-	/** How far past a {@code Pests} header a bare {@code Cooldown:} line is still taken as the pest one. */
-	private static final int PESTS_SECTION_LINES = 6;
-
-	private static final Pattern PEST_COOLDOWN_PATTERN = Pattern.compile("(?i)^pest\\s+cooldown\\s*:\\s*(?<time>.+)$");
 	private static final Pattern PESTS_HEADER_PATTERN = Pattern.compile("(?i)^pests?\\s*:.*$");
-	private static final Pattern COOLDOWN_PATTERN = Pattern.compile("(?i)^cooldown\\s*:\\s*(?<time>.+)$");
+	private static final Pattern COOLDOWN_PATTERN = Pattern.compile("(?i)^(?:pest\\s+)?cooldown\\s*:\\s*(?<time>.+)$");
 
 	/** {@code 12m 30s}, {@code 45s}, {@code 1h 2m 3s} - every unit optional, order fixed. */
 	private static final Pattern UNIT_PATTERN = Pattern.compile("(?<amount>\\d+)\\s*(?<unit>[hms])");
@@ -110,7 +107,7 @@ public class PestHunting {
 			return;
 		}
 
-		int seconds = readCooldown(PlayerListManager.getPlayerStringList());
+		int seconds = readCooldown(PlayerListManager.getPlayerList());
 
 		// Tab dropped the line - leaving or reloading the Garden should not read as the cooldown running out.
 		if (seconds == UNKNOWN) {
@@ -131,33 +128,40 @@ public class PestHunting {
 	/**
 	 * Pest cooldown as read from Tab, or {@link #UNKNOWN} when no line carries it.
 	 *
-	 * <p>Two shapes are accepted because the line is not labelled the same everywhere: an explicit
-	 * {@code Pest Cooldown:} anywhere in the list, or a bare {@code Cooldown:} shortly after a {@code Pests}
-	 * header. The bare form is deliberately kept on a short leash - Tab strips indentation, so nesting is
-	 * invisible here and an unbounded search would happily pick up a cooldown from the next section.
+	 * <p>The line is a bare {@code Cooldown:} - the word pest appears only in the header above it - so it is
+	 * read section by section rather than by searching the whole list, which would just as happily return the
+	 * cooldown of whatever section comes next.
+	 *
+	 * <p>Sections are told apart by indentation, the same rule {@link PlayerListManager} splits Tab into
+	 * widgets by: an unindented line containing a colon opens a section, everything indented below belongs to
+	 * it. That means reading the raw display names instead of {@link PlayerListManager#getPlayerStringList()},
+	 * which strips exactly the leading space this depends on.
 	 */
-	private static int readCooldown(List<String> lines) {
-		int sinceHeader = Integer.MAX_VALUE;
+	private static int readCooldown(@Nullable List<PlayerInfo> entries) {
+		if (entries == null) return UNKNOWN;
 
-		for (String line : lines) {
-			String trimmed = line.strip();
+		boolean inPests = false;
 
-			if (trimmed.isEmpty()) continue;
+		for (PlayerInfo entry : entries) {
+			Component displayName = entry.getTabListDisplayName();
 
-			Matcher labelled = PEST_COOLDOWN_PATTERN.matcher(trimmed);
-			if (labelled.matches()) return parseSeconds(labelled.group("time"));
+			if (displayName == null) continue;
 
-			if (PESTS_HEADER_PATTERN.matcher(trimmed).matches()) {
-				sinceHeader = 0;
+			String raw = displayName.getString();
+
+			if (raw.isBlank()) continue;
+
+			String line = raw.strip();
+
+			if (!raw.startsWith(" ") && raw.contains(":")) {
+				inPests = PESTS_HEADER_PATTERN.matcher(line).matches();
 				continue;
 			}
 
-			if (sinceHeader < PESTS_SECTION_LINES) {
-				Matcher bare = COOLDOWN_PATTERN.matcher(trimmed);
-				if (bare.matches()) return parseSeconds(bare.group("time"));
-			}
+			if (!inPests) continue;
 
-			if (sinceHeader != Integer.MAX_VALUE) sinceHeader++;
+			Matcher cooldown = COOLDOWN_PATTERN.matcher(line);
+			if (cooldown.matches()) return parseSeconds(cooldown.group("time"));
 		}
 
 		return UNKNOWN;
