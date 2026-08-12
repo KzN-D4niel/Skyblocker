@@ -15,6 +15,15 @@ public class FarmingConfig {
 
 	public Greenhouse greenhouse = new Greenhouse();
 
+	public PestHunting pestHunting = new PestHunting();
+
+	/** Driven by {@code /skyblocker pestHunting} only - there is no screen for it. */
+	public static class PestHunting {
+		public boolean enabled = false;
+
+		public int thresholdSeconds = 30;
+	}
+
 	public static class Greenhouse {
 		public boolean enabled = true;
 

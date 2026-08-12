@@ -1911,6 +1911,11 @@
   "skyblocker.partyFinder.tabs.searchSettings": "Search Filters",
   "skyblocker.partyFinder.yourParty": "Your party",
 
+  "skyblocker.pestHunting.set": "Pest hunting will warn below %s seconds.",
+  "skyblocker.pestHunting.started": "Pest hunting started, warning below %s seconds.",
+  "skyblocker.pestHunting.stopped": "Pest hunting stopped.",
+  "skyblocker.pestHunting.title": "Pest cooldown < %s",
+
   "skyblocker.powderTracker": "Powder Mining Tracker",
   "skyblocker.powderTracker.emptyHistory": "Your powder mining rewards list is empty :(",
   "skyblocker.powderTracker.historyReset": "Powder mining tracker has been reset for the current profile.",
